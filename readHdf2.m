@@ -1,5 +1,6 @@
 function readHdf
-    fName = '160402-focus-a.h5';
+    fName = 'v:\Users\User\Documents\Fedor\2017\Jan\27\170127-focus1.h5';
+    
     info = h5info(fName);
     h5disp(fName);
     
