@@ -141,7 +141,7 @@ classdef Kerr_ODS < hgsetget
             params = p.Results; 
             
             [~,fName,~] = fileparts(obj.fName);
-            figTitle = [fName, 'Position:(',num2str(obj.position.x_position,'%10.2f'),',',...
+            figTitle = [fName, ' Position:(',num2str(obj.position.x_position,'%10.2f'),',',...
                 num2str(obj.position.y_position,'% 10.2f'),',',...
                 num2str(obj.position.z_position,'% 10.2f'),')'];
             
@@ -149,15 +149,16 @@ classdef Kerr_ODS < hgsetget
             subplot(211);
                 plot(obj.timeScale,obj.Chanel1,'-r',obj.timeScale,obj.Chanel2,'-b');
                 xlim([min(obj.timeScale) max(obj.timeScale)]);
-                title(figTitle);
+                title(figTitle,'FontName','Times');
                 xlabel('Delay (ns)','FontSize',14,'FontName','Times');
                 ylabel('Signal (V)','FontSize',14,'FontName','Times');
                 legend('Chanel 1','Chanel 2');
                 
             subplot(212);
-                plot(obj.freqScale, obj.FFTspec); title('FFT');
+                plot(obj.freqScale, obj.FFTspec);
+                title('FFT','FontName','Times');
                 legend('rectangular window','Hamming window')
-                xlim([-10 10]);
+                xlim([0 20]);
                 xlabel('Frequency (GHz)','FontSize',14,'FontName','Times');
                 ylabel('FFT intensity (arb. units)','FontSize',14,'FontName','Times');
                 
