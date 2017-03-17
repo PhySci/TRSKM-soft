@@ -160,8 +160,8 @@ classdef Kerr_img2 < hgsetget
                 % calculate rules
                 
                 params = obj.params{imgInd};
-                xScale = linspace(params.xMin,params.xMax,params.xSteps);
-                yScale = linspace(params.yMin,params.yMax,params.ySteps);
+                xScale = obj.getXScale();
+                yScale = obj.getYScale();
                 
                 
 
@@ -599,7 +599,7 @@ classdef Kerr_img2 < hgsetget
             cKerr = squeeze(obj.Kerr1(params.imgInd,:,:)+j*obj.Kerr2(params.imgInd,:,:));
             
             % вращение комплексного изображения
-            ph = -4;
+            ph = -3.5;
             amp0 = abs(cKerr); 
             phase0 = angle(cKerr);
             % complex form of corrected signal
@@ -719,16 +719,70 @@ classdef Kerr_img2 < hgsetget
                   xlim([-lim +lim]);
                   ylim([-lim +lim]);
              
+             if false     
             [~,shortFName,~] = fileparts(obj.fName);
              print(fH1,'-dpng',[shortFName,'kerrRot-img',num2str(params.imgInd),'.png']);     
              print(fH2,'-dpng',[shortFName,'kerrRot-img',num2str(params.imgInd),'plane1.png']);
              print(fH3,'-dpng',[shortFName,'kerrRot-img',num2str(params.imgInd),'plane2.png']);
-                
+             end   
+        end 
+        
+        % make movie of Kerr rotation signal
+        function makeMovie(obj,varargin)
+            % read and parse params
+            p = inputParser();
+            %p.addParamValue('imgInd',1,@isnumeric);
+            p.addParamValue('timeFrames',100,@isnumeric);
+            p.addParamValue('fName','movie',@isstr);
+            p.parse(varargin{:});
+            params = p.Results;
+            
+            xScale = obj.getXScale();
+            yScale = obj.getYScale();
+            zScale = [min(real(obj.cKerr(:))) max(real(obj.cKerr(:)))]
+            
+            freq = 10e9;
+            
+            videoFile = fullfile(pwd,strcat(params.fName,'.avi'));
+            writerObj = VideoWriter(videoFile);
+            writerObj.FrameRate = 2;
+            open(writerObj);
+            
+            fig=figure(1);
+            for imgInd = 1:16
+                ods = obj.params{1,imgInd}.ods;
+                time = 2*(obj.params{1,imgInd}.ods-obj.params{1,1}.ods)/(3e11);
+                phase = (time*freq);
+                imagesc(xScale,yScale,squeeze(real(obj.cKerr(imgInd,:,:))),zScale);
+                colormap(jet); colorbar();
+                axis xy equal
+                xlim([xScale(1) xScale(end)]);
+                ylim([yScale(1) yScale(end)]);
+                xlabel('x (\mum)','FontName','Times','FontSize',14);
+                ylabel('y (\mum)','FontName','Times','FontSize',14);
+                title(['L = ',num2str(ods),' mm. Time is ',num2str(time),...
+                    '. Phase is ',num2str(phase)]);
+                writeVideo(writerObj,getframe(fig));
+            end
+            
+            close(writerObj);
         end    
         
     end
     
     methods (Access = protected)
+        
+        
+        function res = getXScale(obj)
+            res = linspace(obj.params{1,1}.xMin,obj.params{1,1}.xMax,...
+                obj.params{1,1}.xSteps);
+        end 
+        
+        function res = getYScale(obj)
+            res = linspace(obj.params{1,1}.yMin,obj.params{1,1}.yMax,...
+                obj.params{1,1}.ySteps);
+
+        end    
     end
     
 end

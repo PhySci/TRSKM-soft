@@ -8,11 +8,11 @@ function adjustImages(img,varargin)
     inParams = p.Results; 
     
     % fName = '170224-img2.h5';
-     freq = 10e9;
+     freq = 10.56e9;
      x1 = 1; x2 = 21;
      
      % range of final plot of averaged Kerr rotation
-     t1 = 1; t2 = 5;
+     t1 = 1; t2 = 6;
 
      
 
