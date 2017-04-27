@@ -86,7 +86,7 @@ classdef Kerr_img2 < hgsetget
             
             % read images
             if (size(imgGroup.Groups,1)>0)
-                for imgInd = 1:size(imgGroup.Groups,1)
+                for imgInd = 2:size(imgGroup.Groups,1)
                     params = struct();
                     groupName = imgGroup.Groups(imgInd).Name;
                     groupName = ['/images/',num2str(imgInd)];
@@ -141,13 +141,14 @@ classdef Kerr_img2 < hgsetget
         function plotAll(obj,varargin)
             p = inputParser();
             p.addParamValue('save',false,@islogical);
+            p.addParamValue('rotate',false,@islogical);
             p.parse(varargin{:});
             inParams = p.Results;
             
             % normalize images
             monLim = [min(min(obj.Monitor1(:)),min(obj.Monitor2(:)))...
                 max(max(obj.Monitor1(:)),max(obj.Monitor2(:)))];
-            monLim = [0.21 0.25]
+            %monLim = [0.21 0.25]
             kerr1Lim = [min(obj.Kerr1(:)), max(obj.Kerr1(:))];
             kerr2Lim = [min(obj.Kerr2(:)), max(obj.Kerr2(:))];
             
@@ -167,20 +168,22 @@ classdef Kerr_img2 < hgsetget
 
                 hF1 = figure(imgInd);
                 set(gca,'FontSize',16,'FontName','Times');
-                subplot(222);
-                    imagesc(xScale,yScale,squeeze(obj.Monitor1(imgInd,:,:)),monLim);
-                    axis xy equal;
-                    xlabel('x (\mum)','FontSize',22,'FontName','Times');
-                    ylabel('y (\mum)','FontSize',22,'FontName','Times');
-                    xlim([min(xScale) max(xScale)]);
-                    title('Reflectivity 1','FontSize',22,'FontName','Times');
-                    ylim([min(yScale) max(yScale)]);
-                    t = colorbar('peer',gca);
-                    set(get(t,'ylabel'),'FontSize',12,'FontName','Times','String', 'Voltage');
+                hS = []; %subplot handlers
+                
+                %subplot(411);
+                %    hS = [hS imagesc(xScale,yScale,squeeze(obj.Monitor1(imgInd,:,:)),monLim)];
+                %    axis xy equal;
+                %    xlabel('x (\mum)','FontSize',22,'FontName','Times');
+                %    ylabel('y (\mum)','FontSize',22,'FontName','Times');
+                %    xlim([min(xScale) max(xScale)]);
+                %    title('Reflectivity 1','FontSize',22,'FontName','Times');
+                %    ylim([min(yScale) max(yScale)]);
+                %    t = colorbar('peer',gca);
+                %    set(get(t,'ylabel'),'FontSize',12,'FontName','Times','String', 'Voltage');
                 
                 set(gca,'FontSize',16,'FontName','Times');
-                subplot(221);
-                    imagesc(xScale,yScale,squeeze(obj.Kerr1(imgInd,:,:)),kerr1Lim);
+                subplot(121);
+                    hS = [hS imagesc(xScale,yScale,squeeze(obj.Kerr1(imgInd,:,:)),kerr1Lim)];
                     axis xy equal;
                     xlabel('x (\mum)','FontSize',22,'FontName','Times');
                     ylabel('y (\mum)','FontSize',22,'FontName','Times');
@@ -191,8 +194,8 @@ classdef Kerr_img2 < hgsetget
                     set(get(t,'ylabel'),'String', 'Voltage');
                     
                 set(gca,'FontSize',16,'FontName','Times');
-                subplot(223);
-                    imagesc(xScale,yScale,squeeze(obj.Kerr2(imgInd,:,:)),kerr2Lim);
+                subplot(122);
+                    hS = [hS imagesc(xScale,yScale,squeeze(obj.Kerr2(imgInd,:,:)),kerr2Lim)];
                     axis xy equal;
                     xlabel('x (\mum)','FontSize',22,'FontName','Times');
                     ylabel('y (\mum)','FontSize',22,'FontName','Times');
@@ -203,18 +206,18 @@ classdef Kerr_img2 < hgsetget
                     set(get(t,'ylabel'),'String', 'Voltage');
                     colormap(copper)
                 
-                set(gca,'FontSize',16,'FontName','Times');    
-                subplot(224);
-                    imagesc(xScale,yScale,squeeze(laserIntensity(imgInd,:,:)));
-                    axis xy equal;
-                    xlabel('x (\mum)','FontSize',22,'FontName','Times');
-                    ylabel('y (\mum)','FontSize',22,'FontName','Times');
-                    xlim([min(xScale) max(xScale)]);
-                    ylim([min(yScale) max(yScale)]);
-                    title('Laser intensity','FontSize',22,'FontName','Times');
-                    t = colorbar('peer',gca);
-                    set(get(t,'ylabel'),'String', 'Voltage');
-                    colormap(copper)    
+                %set(gca,'FontSize',16,'FontName','Times');    
+                %subplot(412);
+                %    hS = [hS imagesc(xScale,yScale,squeeze(laserIntensity(imgInd,:,:)))];
+                %    axis xy equal;
+                %    xlabel('x (\mum)','FontSize',22,'FontName','Times');
+                %    ylabel('y (\mum)','FontSize',22,'FontName','Times');
+                %    xlim([min(xScale) max(xScale)]);
+                %    ylim([min(yScale) max(yScale)]);
+                %    title('Laser intensity','FontSize',22,'FontName','Times');
+                %    t = colorbar('peer',gca);
+                %    set(get(t,'ylabel'),'String', 'Voltage');
+                %    colormap(copper)    
                 %
                 %save images
                 if inParams.save
@@ -267,59 +270,7 @@ classdef Kerr_img2 < hgsetget
             title('FFT of Kerr rotation','FontSize',14,'FontName','Times','FontWeight','bold');
             xlim([-0.5 0.5]);
         end
-        
-        function waveFit(obj,varargin)
-            p = inputParser();
-            p.addParamValue('slices',[1 2],@isnumeric);
-            p.parse(varargin{:});
-            params = p.Results;
-            
-            
-            Amp = squeeze(obj.Kerr1(1,1,:));
-            A = [(max(Amp)-min(Amp))/2 0 2e-4]; % amplitude
-            l = [4 3 6]; %wavelength
-            k = [5 5 30]; % dampling length
-            
-            C = [1.5e-5 0 2e-4]; % background
-            phi = [0.2 0 2*pi]; % phase
-            xErf = [8 15 20];
-            cErf = [1 1 10];
-            
-            options = saoptimset('PlotFcns',{@saplotbestx,...
-                @saplotbestf,@saplotx,@saplotf},...
-                'TolFun',1e-6);
-            
-            parArr = [A; l; phi; k; C; xErf; cErf];
-            coeff = parArr(:,1);
-            
-            figure(1)
-            coeff = simulannealbnd(@(x) err(x,Amp),coeff,parArr(:,2),parArr(:,3),options)
-            h1 = figure();
-            er = coeff(1)*erf((x-coeff(6))*coeff(7))+coeff(5);
-            ep = coeff(1)*exp(-(x-x(1))/coeff(4))+coeff(5);
-            plot(x,Amp,'-rx',x,func(coeff),x,er,x,ep);
-            disp(['Error is ' num2str(err(coeff))]);
-            %res(ind,:) = [num2str(err(coeff)) coeff];
-            save res.mat res;
-            
-            function res = err(coeff,Amp)
-                err = (Amp.' - func(coeff)).*(abs(Amp-coeff(5)).^1).'*1e9;
-                res = sum(err.^2,2);
-            end
-            
-            function res = func(coeff,Amp,x)
-                A = coeff(1);
-                l = coeff(2);
-                phi = coeff(3);
-                k = coeff(4);
-                C = coeff(5);
-                xErf = coeff(6);
-                cErf = coeff(7);
-                
-                res = A*sin(2*pi*x./l+phi).*exp(-(x-x(1))/k).*erf((x-xErf)*cErf)+C;
-            end
-        end
-        
+         
         % plot one desired image
         % params
         %  index - number of the desired image (start from 1)
@@ -461,35 +412,40 @@ classdef Kerr_img2 < hgsetget
                 hF = figure(imgInd);
                 
 %TODO                xScale = linspace(obj.params{1,imgInd},)
-                subplot(231);
-                   imagesc(squeeze(reflect(imgInd,:,:)),refLimit);
-                   axis xy square; 
-                   title('Reflectivity','FontSize',20,'FontName','Times');
-                   ylabel('y (\mum)'); xlabel('x (\mum)');
-                   colorbar();
+                %subplot(231);
+                %   imagesc(squeeze(reflect(imgInd,:,:)),refLimit);
+                %   axis xy square; 
+                %   title('Reflectivity','FontSize',20,'FontName','Times');
+                %   ylabel('y (\mum)'); xlabel('x (\mum)');
+                %   colorbar();
 
-                subplot(234);
-                   plot(squeeze(reflect(imgInd,:,:)));
-                   xlabel('x (\mum)');
-                   xlim([0 100]); ylim(refLimit);
+                % raw reflectivity plot
+                %subplot(221);
+                %   plot(squeeze(reflect(imgInd,:,:)));
+                %   xlabel('x (\mum)');
+                %   xlim([0 100]); ylim(refLimit);
 
-                subplot(232);
+                % normalized reflectivity map   
+                subplot(221);
                    imagesc(squeeze(normReflect(imgInd,:,:)),normRefLimit);
                    title('Normalized reflectivity','FontSize',20,'FontName','Times');
                    axis xy square;
                    xlabel('x (\mum)');
 
-                subplot(235);
+                % normalized reflectivity plot    
+                subplot(223);
                    plot(squeeze(normReflect(imgInd,:,:)));
                    xlabel('x (\mum)');
                    xlim([0 100]); ylim(normRefLimit);
-
-                subplot(233);
+                   
+                % Kerr map
+                subplot(222);
                    imagesc(squeeze(obj.Kerr1(imgInd,:,:)),kerrLimit);
                    title('Kerr rotation','FontSize',20,'FontName','Times');
                    axis xy square; xlabel('x (\mum)');
-
-                subplot(236);
+                
+                % Kerr plot   
+                subplot(224);
                    plot(squeeze(obj.Kerr1(imgInd,:,:)));   
                    xlabel('x (\mum)');
                    xlim([0 100]); ylim(kerrLimit);
@@ -768,19 +724,21 @@ classdef Kerr_img2 < hgsetget
             close(writerObj);
         end    
         
-    end
+    %end
     
-    methods (Access = protected)
+    %methods (Access = protected)
         
         
         function res = getXScale(obj)
-            res = linspace(obj.params{1,1}.xMin,obj.params{1,1}.xMax,...
-                obj.params{1,1}.xSteps);
+            ind = 2
+            res = linspace(obj.params{1,ind}.xMin,obj.params{1,ind}.xMax,...
+                obj.params{1,ind}.xSteps+1);
         end 
         
         function res = getYScale(obj)
-            res = linspace(obj.params{1,1}.yMin,obj.params{1,1}.yMax,...
-                obj.params{1,1}.ySteps);
+            ind = 2
+            res = linspace(obj.params{1,ind}.yMin,obj.params{1,ind}.yMax,...
+                obj.params{1,ind}.ySteps+1);
 
         end    
     end

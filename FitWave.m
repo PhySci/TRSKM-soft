@@ -1,14 +1,13 @@
-function res= FitWave()
+function res = FitWave()
     global x1 Signal1
     
-    fName = '160402-IMG-e.h5';
     img = Kerr_img2();
     img.fName = fName;
     img.open();
     %img.plotImg();
     
     
-    imgInd = 1;
+    imgInd = 2;
     y1 = 1;
     
     x0 = linspace(img.params{imgInd}.xMin,img.params{imgInd}.xMax,img.params{imgInd}.xSteps+1);
