@@ -145,7 +145,7 @@ classdef Kerr_ODS < hgsetget
                 num2str(obj.position.y_position,'% 10.2f'),',',...
                 num2str(obj.position.z_position,'% 10.2f'),')'];
             
-            hf = figure();
+            hf = figure(1);
             subplot(211);
                 plot(obj.timeScale,obj.Chanel1,'-r',obj.timeScale,obj.Chanel2,'-b');
                 xlim([min(obj.timeScale) max(obj.timeScale)]);
